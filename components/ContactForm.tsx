@@ -40,14 +40,36 @@ export default function ContactForm() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (form.honeypot) return; // spam trap
+    if (form.honeypot) return;
 
     setStatus("submitting");
 
-    // Simulate submission (replace with actual API call or form service)
-    await new Promise((res) => setTimeout(res, 1200));
-    setStatus("success");
-    setForm({ name: "", email: "", phone: "", service: "", message: "", honeypot: "" });
+    try {
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          access_key: "c0948b76-cba7-4e33-bfae-77c2c2b46b35",
+          subject: `New enquiry from ${form.name} — CA Hemanth Reddy & Co`,
+          from_name: "CA Hemanth Reddy Website",
+          name: form.name,
+          email: form.email,
+          phone: form.phone || "Not provided",
+          service: form.service || "Not selected",
+          message: form.message,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setStatus("success");
+        setForm({ name: "", email: "", phone: "", service: "", message: "", honeypot: "" });
+      } else {
+        setStatus("error");
+      }
+    } catch {
+      setStatus("error");
+    }
   }
 
   return (
